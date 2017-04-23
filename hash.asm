@@ -7,7 +7,7 @@ str_busca: .asciiz "\nDigite a chave a ser buscada, ou -1 para finalizar a busca
 str_menu: .asciiz "Menu: \n1 - Inserir na Hash \n2 - Remover da Hash \n3 - Buscar na Hash \n4 - Vizualizar Hash \n5 - Sair\n"
 str_vizu1: .asciiz " - "
 str_vizu2: .asciiz " ,"
-str_end_line: .asciiz "\n"
+str_enter: .asciiz "\nDigite ENTER para continuar a visualização: "
 
 .align 2
 .text
@@ -73,6 +73,7 @@ main_sair:
 #	NODE *tabela[16]; => 16 * 4 = 64 bytes
 #Retorna em $v0 a tabela hash
 criar_tabela_hash:
+	#Pilha
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
 	
@@ -105,6 +106,7 @@ loop_criar_tabela:
 fim_loop_criar:	
 	move $v0, $t1 # A função retorna tabela[16]
 	
+	#Pilha
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	
@@ -112,6 +114,7 @@ fim_loop_criar:
 
 #Parametro $a0 - Tabela Hash
 inserir_hash:
+	#Pilha
 	addi $sp, $sp, -8
 	sw $a0, 4($sp)
 	sw $ra, 0($sp)
@@ -121,7 +124,7 @@ inserir_hash:
 	
 loop_inserir:
 	li $v0, 4 #Código para imprimir String
-	la $a0, str_inserir
+	la $a0, str_inserir #"\nDigite a chave a ser inserida, ou -1 para finalizar a inserção: "
 	syscall
 	
 	li $v0, 5 #Código para ler inteiro
@@ -151,6 +154,7 @@ loop_inserir:
 	j loop_inserir
 	
 fim_loop_inserir:
+	#Pilha
 	lw $ra, 0($sp)
 	lw $a0, 4($sp)
 	addi $sp, $sp, 8
@@ -159,6 +163,7 @@ fim_loop_inserir:
 
 #Parametro $a0 - Tabela hash
 remover_hash:
+	#Pilha
 	addi $sp, $sp, -8
 	sw $a0, 4($sp)
 	sw $ra, 0($sp)
@@ -168,7 +173,7 @@ remover_hash:
 	
 loop_remover:
 	li $v0, 4 #Código para imprimir String
-	la $a0, str_remover
+	la $a0, str_remover #"\nDigite a chave a ser removida, ou -1 para finalizar a remoção: "
 	syscall
 
 	li $v0, 5 #Código para leitura de inteiro 
@@ -203,7 +208,8 @@ remover_node:
 fim_loop_busca_remover:
 	j loop_remover
 
-fim_loop_remover:		
+fim_loop_remover:
+	#Pilha		
 	lw $a0, 4($sp)
 	lw $ra, 0($sp)
 	addi $sp, $sp, 8
@@ -211,6 +217,7 @@ fim_loop_remover:
 	jr $ra
 	
 busca_hash:
+	#Pilha
 	addi $sp, $sp, -8
 	sw $a0, 4($sp)
 	sw $ra, 0($sp)
@@ -220,7 +227,7 @@ busca_hash:
 	li $t2, 16 #tam = tamanho da hash
 loop_busca:
 	li $v0, 4 #Código para imprimir String
-	la $a0, str_busca
+	la $a0, str_busca #"\nDigite o numero a ser buscado, ou -1 para finalizar a busca: "
 	syscall
 	
 	li $v0, 5 #Código para ler inteiro
@@ -263,6 +270,7 @@ fim_busca_impressao:
 	j loop_busca
 	
 fim_loop_busca:
+	#Pilha
 	lw $a0, 4($sp)
 	lw $ra, 0($sp)
 	addi $sp, $sp, 8
@@ -270,6 +278,7 @@ fim_loop_busca:
 	jr $ra	
 	
 vizualizar_hash:
+	#Pilha
 	addi $sp, $sp, -8
 	sw $a0, 4($sp)
 	sw $ra, 0($sp)
@@ -293,15 +302,18 @@ loop_vizualizar:
 	la $a0, str_vizu1
 	syscall
 	
+	bge $t3, $zero, vizualizar_lista_inicio #Na impressão do primeiro numero da lista n imprime a ","
+	
 loop_vizualizar_lista:
 	blt $t3, $zero, fim_loop_vizualizar_lista
 	
-	li $v0, 1 #Código para imprimir inteiro
-	move $a0, $t3
+	li $v0, 4 #Código para imprimir string
+	la $a0, str_vizu2 #" ,"
 	syscall
 	
-	li $v0, 4 #Código para imprimir string
-	la $a0, str_vizu2
+vizualizar_lista_inicio:
+	li $v0, 1 #Código para imprimir inteiro
+	move $a0, $t3
 	syscall
 	
 	lw $t2, 8($t2) #cabeca = cabeca->prox
@@ -314,7 +326,10 @@ fim_loop_vizualizar_lista:
 	addi $t7, $t7, 4 #Anda uma posição(4 bytes) no vetor tabela
 	
 	li $v0, 4 #Código para imprimir string
-	la $a0, str_end_line
+	la $a0, str_enter #"/nDigite ENTER para continuar a visualização: "
+	syscall
+	
+	li $v0, 8 #Código para ler string
 	syscall
 	
 	j loop_vizualizar
