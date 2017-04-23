@@ -1,28 +1,64 @@
 .data
 .align 0
 
-str_inserir: .asciiz "Digite a chave a ser inserida, ou -1 para finalizar a inserção: "
-str_remover: .asciiz "Digite a chave a ser removida, ou -1 para finalizar a remoção: "
-str_busca: .asciiz "Digite a chave a ser removida, ou -1 para finalizar a busca: "
-str_chave: .asciiz "A chave "
-str_busca_erro: .asciiz " não foi encontrada na tabela\n"
-str_busca_encontrou: .asciiz " foi encontrada na tabela\n"
+str_inserir: .asciiz "Digite a chave a ser inserida, ou -1 para finalizar a inserÃ§Ã£o: "
+str_remover: .asciiz "Digite a chave a ser removida, ou -1 para finalizar a remoÃ§Ã£o: "
+str_busca: .asciiz "Digite a chave a ser buscada, ou -1 para finalizar a busca: "
+str_menu: .asciiz "Menu: \n1 - Inserir na Hash \n2 - Remover da Hash \n3 - Buscar na Hash \n4 - Vizualizar Hash \n5 - Sair\n"
 
 .align 2
 .text
 .globl main
 main:
 
-jal criar_tabela_hash
+	jal criar_tabela_hash
+	move $s1, $v0
+	
+loop_main:
+	li $v0, 4 #CÃ³digo para imprimir string
+	li $a0, str_menu
+	syscall
+	
+	#OpÃ§Ãµes do menu
+	li $t1, 1
+	li $t2, 2
+	li $t3, 3
+	li $t4, 4
+	li $t5, 5
+	
+	li $v0, 5
+	syscall
+	
+	beq $v0, $t1, main_inserir
+	beq $v0, $t2, main_remover
+	beq $v0, $t3, main_busca
+	beq $v0, $t4, main_visualizar
+	beq $v0, $t5, main_sair
+	
+	j loop_main #Se digitou comando invÃ¡lido, volta na leitura 
 
-move $a0, $v0
-jal inserir_hash
-jal busca_hash
-jal remover_hash
-jal busca_hash
+main_inserir:
+	move $a0, $s1
+	jal inserir_hash
+	j loop_main
 
-li $v0 10
-syscall
+main_busca:
+	move $a0, $s1
+	jal busca_hash
+	j loop_main
+	
+main_remover:
+	move $a0, $s1
+	jal remover_hash
+	j loop_main
+
+main_vizualizar:
+	move $a0, $s1
+	j loop_main
+	
+main_sair:
+	li $v0 10
+	syscall
 
 # typedef struct node{
 #		int val;
@@ -36,14 +72,14 @@ criar_tabela_hash:
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
 	
-	#Alocação de tabela[16]
-	li $v0, 9 #serviço para alocação de bytes
+	#AlocaÃ§Ã£o de tabela[16]
+	li $v0, 9 #serviÃ§o para alocaÃ§Ã£o de bytes
 	li $a0, 64 # 4 * 16 = 64
 	syscall
 	move $t1, $v0
 	
 	li $t2, 16 #i = 16, usado no loop
-	move $t3, $v0 #usado para controlar a inserção no vetor	
+	move $t3, $v0 #usado para controlar a inserÃ§Ã£o no vetor	
 loop_criar_tabela:
 	 beq $zero, $t2, fim_loop_criar # while(i != 0)
 	
@@ -52,18 +88,18 @@ loop_criar_tabela:
 	 syscall
 	 
 	 li $t5, -1 
-	 sw $t5, 0($v0) # node->val = -1,  (-1) marca que é nó cabeça
+	 sw $t5, 0($v0) # node->val = -1,  (-1) marca que Ã© nÃ³ cabeÃ§a
 	 sw $v0, 4($v0) # node->ant = node =>lista circular
 	 sw $v0, 8($v0)	# node->prox = node => lista circular
 	 
 	 sw $v0, 0($t3)
-	 addi $t3, $t3, 4 #avança uma posição no vetor(4 bytes)
+	 addi $t3, $t3, 4 #avanÃ§a uma posiÃ§Ã£o no vetor(4 bytes)
 	 addi $t2, $t2, -1 #i = i -1
 	 
 	 j loop_criar_tabela
 	 
 fim_loop_criar:	
-	move $v0, $t1 # A função retorna tabela[16]
+	move $v0, $t1 # A funÃ§Ã£o retorna tabela[16]
 	
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
@@ -80,11 +116,11 @@ inserir_hash:
 	li $t2, 16 #tamanho da hash
 	
 loop_inserir:
-	li $v0, 4 #Código para imprimir String
+	li $v0, 4 #CÃ³digo para imprimir String
 	la $a0, str_inserir
 	syscall
 	
-	li $v0, 5 #Código para ler inteiro
+	li $v0, 5 #CÃ³digo para ler inteiro
 	syscall
 	move $t1, $v0 # n = numero lido	
 	
@@ -93,11 +129,11 @@ loop_inserir:
 	div $t1, $t2
 	mfhi $t3 # i = n%16
 	 
-	mul $t3, $t3, 4 # Como cada posição do vetor tem 4 bytes, multiplica-se a posição por 4
+	mul $t3, $t3, 4 # Como cada posiÃ§Ã£o do vetor tem 4 bytes, multiplica-se a posiÃ§Ã£o por 4
 	add $t3, $t7, $t3
 	lw $t4, 0($t3) # tabela[i]
 		
-	li $v0, 9 #Código para alocar memória
+	li $v0, 9 #CÃ³digo para alocar memÃ³ria
 	li $a0, 12
 	syscall
 	
@@ -127,28 +163,28 @@ remover_hash:
 	li $t1, 16 #tamanho da hash
 	
 loop_remover:
-	li $v0, 4 #Código para imprimir String
+	li $v0, 4 #CÃ³digo para imprimir String
 	la $a0, str_remover
 	syscall
 
-	li $v0, 5 #Código para leitura de inteiro 
+	li $v0, 5 #CÃ³digo para leitura de inteiro 
 	syscall
 	
 	move $t2, $v0
 	blt $t2, $zero, fim_loop_remover
 	
 	div $t2, $t1
-	mfhi $t3 #recupera o resto da divisão
+	mfhi $t3 #recupera o resto da divisÃ£o
 	
 	mul $t4, $t3, 4
 	add $t4, $t7, $t4
 	lw $t4, 0($t4) #prem = tabela[i]
-	lw $t4, 8($t4) #prem = prem->prox, primeira posição válida da tabela
+	lw $t4, 8($t4) #prem = prem->prox, primeira posiÃ§Ã£o vÃ¡lida da tabela
 	
 loop_busca_remover:
 	lw $t5, 0($t4) #val = prem->val
 	blt $t5, $zero, fim_loop_busca_remover # Se val < 0 sai do loop
-	beq $t2, $t5, remover_node #Se val == chave, remove o nó da lista
+	beq $t2, $t5, remover_node #Se val == chave, remove o nÃ³ da lista
 	
 	lw $t4, 8($t4) #prem = prem->prox
 	j loop_busca_remover
@@ -178,11 +214,11 @@ busca_hash:
 	
 	li $t2, 16 #tam = tamanho da hash
 loop_busca:
-	li $v0, 4 #Código para imprimir String
+	li $v0, 4 #CÃ³digo para imprimir String
 	la $a0, str_busca
 	syscall
 	
-	li $v0, 5 #Código para ler inteiro
+	li $v0, 5 #CÃ³digo para ler inteiro
 	syscall
 	move $t1, $v0 #n = numero lido 	
 	
@@ -199,7 +235,7 @@ loop_busca:
 loop_busca_lista:
 	lw $t5, 0($t4) #val = pbusca->val
 	
-	blt $t5, $zero, fim_loop_busca_lista_erro # Se val < 0, chegou no nó cabeça e portanto não encontrou a chave
+	blt $t5, $zero, fim_loop_busca_lista_erro # Se val < 0, chegou no nÃ³ cabeÃ§a e portanto nÃ£o encontrou a chave
 	beq $t5, $t1, fim_loop_busca_lista #Se val == chave, encontrou a chave na tabela
 	
 	lw $t4, 8($t4) #pbusca = pbusca->prox
@@ -207,32 +243,17 @@ loop_busca_lista:
 	j loop_busca_lista
 	
 fim_loop_busca_lista_erro:
-	li $v0, 4 #Código para imprimir string
-	la $a0, str_chave
+	li $v0, 1 #CÃ³digo para imprimir inteiro
+	li $a0, -1
 	syscall
 	
-	li $v0, 1 #Código para imprimir inteiro
-	move $a0, $t1
-	syscall
-	
-	li $v0, 4 #Código para imprimir string
-	la $a0, str_busca_erro
-	syscall
 	j fim_busca_impressao
 	
 fim_loop_busca_lista:
-	li $v0, 4 #Código para imprimir string
-	la $a0, str_chave
-	syscall
-	
-	li $v0, 1 #Código para imprimir inteiro
+	li $v0, 1 #CÃ³digo para imprimir inteiro
 	move $a0, $t1
 	syscall
-	
-	li $v0, 4 #Código para imprimir string
-	la $a0, str_busca_encontrou
-	syscall
-	
+
 fim_busca_impressao:
 	j loop_busca
 	
