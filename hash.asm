@@ -1,9 +1,9 @@
 .data
 .align 0
 
-str_inserir: .asciiz "Digite a chave a ser inserida, ou -1 para finalizar a inser√ß√£o: "
-str_remover: .asciiz "Digite a chave a ser removida, ou -1 para finalizar a remo√ß√£o: "
-str_busca: .asciiz "Digite a chave a ser buscada, ou -1 para finalizar a busca: "
+str_inserir: .asciiz "\nDigite a chave a ser inserida, ou -1 para finalizar a inserÁ„o: "
+str_remover: .asciiz "\nDigite a chave a ser removida, ou -1 para finalizar a remoÁ„o: "
+str_busca: .asciiz "\nDigite a chave a ser buscada, ou -1 para finalizar a busca: "
 str_menu: .asciiz "Menu: \n1 - Inserir na Hash \n2 - Remover da Hash \n3 - Buscar na Hash \n4 - Vizualizar Hash \n5 - Sair\n"
 
 .align 2
@@ -16,7 +16,7 @@ main:
 	
 loop_main:
 	li $v0, 4 #C√≥digo para imprimir string
-	li $a0, str_menu
+	la $a0, str_menu
 	syscall
 	
 	#Op√ß√µes do menu
@@ -52,7 +52,7 @@ main_remover:
 	jal remover_hash
 	j loop_main
 
-main_vizualizar:
+main_visualizar:
 	move $a0, $s1
 	j loop_main
 	
