@@ -5,6 +5,9 @@ str_inserir: .asciiz "\nDigite a chave a ser inserida, ou -1 para finalizar a in
 str_remover: .asciiz "\nDigite a chave a ser removida, ou -1 para finalizar a remoção: "
 str_busca: .asciiz "\nDigite a chave a ser buscada, ou -1 para finalizar a busca: "
 str_menu: .asciiz "Menu: \n1 - Inserir na Hash \n2 - Remover da Hash \n3 - Buscar na Hash \n4 - Vizualizar Hash \n5 - Sair\n"
+str_vizu1: .asciiz " - "
+str_vizu2: .asciiz " ,"
+str_end_line: .asciiz "\n"
 
 .align 2
 .text
@@ -15,11 +18,11 @@ main:
 	move $s1, $v0
 	
 loop_main:
-	li $v0, 4 #CÃ³digo para imprimir string
+	li $v0, 4 #Código para imprimir string
 	la $a0, str_menu
 	syscall
 	
-	#OpÃ§Ãµes do menu
+	#Opções do menu
 	li $t1, 1
 	li $t2, 2
 	li $t3, 3
@@ -35,7 +38,7 @@ loop_main:
 	beq $v0, $t4, main_visualizar
 	beq $v0, $t5, main_sair
 	
-	j loop_main #Se digitou comando invÃ¡lido, volta na leitura 
+	j loop_main #Se digitou comando inválido, volta na leitura 
 
 main_inserir:
 	move $a0, $s1
@@ -54,6 +57,7 @@ main_remover:
 
 main_visualizar:
 	move $a0, $s1
+	jal vizualizar_hash
 	j loop_main
 	
 main_sair:
@@ -72,14 +76,14 @@ criar_tabela_hash:
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
 	
-	#AlocaÃ§Ã£o de tabela[16]
-	li $v0, 9 #serviÃ§o para alocaÃ§Ã£o de bytes
+	#Alocação de tabela[16]
+	li $v0, 9 #serviço para alocação de bytes
 	li $a0, 64 # 4 * 16 = 64
 	syscall
 	move $t1, $v0
 	
 	li $t2, 16 #i = 16, usado no loop
-	move $t3, $v0 #usado para controlar a inserÃ§Ã£o no vetor	
+	move $t3, $v0 #usado para controlar a inserção no vetor	
 loop_criar_tabela:
 	 beq $zero, $t2, fim_loop_criar # while(i != 0)
 	
@@ -88,18 +92,18 @@ loop_criar_tabela:
 	 syscall
 	 
 	 li $t5, -1 
-	 sw $t5, 0($v0) # node->val = -1,  (-1) marca que Ã© nÃ³ cabeÃ§a
+	 sw $t5, 0($v0) # node->val = -1,  (-1) marca que é nó cabeça
 	 sw $v0, 4($v0) # node->ant = node =>lista circular
 	 sw $v0, 8($v0)	# node->prox = node => lista circular
 	 
 	 sw $v0, 0($t3)
-	 addi $t3, $t3, 4 #avanÃ§a uma posiÃ§Ã£o no vetor(4 bytes)
+	 addi $t3, $t3, 4 #avança uma posição no vetor(4 bytes)
 	 addi $t2, $t2, -1 #i = i -1
 	 
 	 j loop_criar_tabela
 	 
 fim_loop_criar:	
-	move $v0, $t1 # A funÃ§Ã£o retorna tabela[16]
+	move $v0, $t1 # A função retorna tabela[16]
 	
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
@@ -116,11 +120,11 @@ inserir_hash:
 	li $t2, 16 #tamanho da hash
 	
 loop_inserir:
-	li $v0, 4 #CÃ³digo para imprimir String
+	li $v0, 4 #Código para imprimir String
 	la $a0, str_inserir
 	syscall
 	
-	li $v0, 5 #CÃ³digo para ler inteiro
+	li $v0, 5 #Código para ler inteiro
 	syscall
 	move $t1, $v0 # n = numero lido	
 	
@@ -129,11 +133,11 @@ loop_inserir:
 	div $t1, $t2
 	mfhi $t3 # i = n%16
 	 
-	mul $t3, $t3, 4 # Como cada posiÃ§Ã£o do vetor tem 4 bytes, multiplica-se a posiÃ§Ã£o por 4
+	mul $t3, $t3, 4 # Como cada posição do vetor tem 4 bytes, multiplica-se a posição por 4
 	add $t3, $t7, $t3
 	lw $t4, 0($t3) # tabela[i]
 		
-	li $v0, 9 #CÃ³digo para alocar memÃ³ria
+	li $v0, 9 #Código para alocar memória
 	li $a0, 12
 	syscall
 	
@@ -149,13 +153,13 @@ loop_inserir:
 fim_loop_inserir:
 	lw $ra, 0($sp)
 	lw $a0, 4($sp)
-	addi $sp, $sp, 4
+	addi $sp, $sp, 8
 	
 	jr $ra
 
 #Parametro $a0 - Tabela hash
 remover_hash:
-	addi $sp, $sp, -4
+	addi $sp, $sp, -8
 	sw $a0, 4($sp)
 	sw $ra, 0($sp)
 	
@@ -163,28 +167,28 @@ remover_hash:
 	li $t1, 16 #tamanho da hash
 	
 loop_remover:
-	li $v0, 4 #CÃ³digo para imprimir String
+	li $v0, 4 #Código para imprimir String
 	la $a0, str_remover
 	syscall
 
-	li $v0, 5 #CÃ³digo para leitura de inteiro 
+	li $v0, 5 #Código para leitura de inteiro 
 	syscall
 	
 	move $t2, $v0
 	blt $t2, $zero, fim_loop_remover
 	
 	div $t2, $t1
-	mfhi $t3 #recupera o resto da divisÃ£o
+	mfhi $t3 #recupera o resto da divisão
 	
 	mul $t4, $t3, 4
 	add $t4, $t7, $t4
 	lw $t4, 0($t4) #prem = tabela[i]
-	lw $t4, 8($t4) #prem = prem->prox, primeira posiÃ§Ã£o vÃ¡lida da tabela
+	lw $t4, 8($t4) #prem = prem->prox, primeira posição válida da tabela
 	
 loop_busca_remover:
 	lw $t5, 0($t4) #val = prem->val
 	blt $t5, $zero, fim_loop_busca_remover # Se val < 0 sai do loop
-	beq $t2, $t5, remover_node #Se val == chave, remove o nÃ³ da lista
+	beq $t2, $t5, remover_node #Se val == chave, remove o nó da lista
 	
 	lw $t4, 8($t4) #prem = prem->prox
 	j loop_busca_remover
@@ -202,6 +206,7 @@ fim_loop_busca_remover:
 fim_loop_remover:		
 	lw $a0, 4($sp)
 	lw $ra, 0($sp)
+	addi $sp, $sp, 8
 	
 	jr $ra
 	
@@ -214,11 +219,11 @@ busca_hash:
 	
 	li $t2, 16 #tam = tamanho da hash
 loop_busca:
-	li $v0, 4 #CÃ³digo para imprimir String
+	li $v0, 4 #Código para imprimir String
 	la $a0, str_busca
 	syscall
 	
-	li $v0, 5 #CÃ³digo para ler inteiro
+	li $v0, 5 #Código para ler inteiro
 	syscall
 	move $t1, $v0 #n = numero lido 	
 	
@@ -235,7 +240,7 @@ loop_busca:
 loop_busca_lista:
 	lw $t5, 0($t4) #val = pbusca->val
 	
-	blt $t5, $zero, fim_loop_busca_lista_erro # Se val < 0, chegou no nÃ³ cabeÃ§a e portanto nÃ£o encontrou a chave
+	blt $t5, $zero, fim_loop_busca_lista_erro # Se val < 0, chegou no nó cabeça e portanto não encontrou a chave
 	beq $t5, $t1, fim_loop_busca_lista #Se val == chave, encontrou a chave na tabela
 	
 	lw $t4, 8($t4) #pbusca = pbusca->prox
@@ -243,14 +248,14 @@ loop_busca_lista:
 	j loop_busca_lista
 	
 fim_loop_busca_lista_erro:
-	li $v0, 1 #CÃ³digo para imprimir inteiro
+	li $v0, 1 #Código para imprimir inteiro
 	li $a0, -1
 	syscall
 	
 	j fim_busca_impressao
 	
 fim_loop_busca_lista:
-	li $v0, 1 #CÃ³digo para imprimir inteiro
+	li $v0, 1 #Código para imprimir inteiro
 	move $a0, $t1
 	syscall
 
@@ -260,10 +265,64 @@ fim_busca_impressao:
 fim_loop_busca:
 	lw $a0, 4($sp)
 	lw $ra, 0($sp)
-	addi $sp, $sp, 4
+	addi $sp, $sp, 8
 	
 	jr $ra	
-
 	
-		
+vizualizar_hash:
+	addi $sp, $sp, -8
+	sw $a0, 4($sp)
+	sw $ra, 0($sp)
+	
+	move $t7, $a0
+	li $t1, 16 #Auxiliar na hora de percorrer o vetor tabela
+	li $t0, 0 #pos = 0
+	
+loop_vizualizar:
+	beq $t0, $t1, fim_loop_vizualizar
+	
+	lw $t2, 0($t7) #cabeca = tabela[pos]
+	lw $t2, 8($t2) #cabeca = cabeca->prox
+	lw $t3, 0($t2) #val = cabeca->val
+	
+	li $v0, 1 #Código para imprimir inteiro
+	move $a0, $t0
+	syscall
+	
+	li $v0, 4 #Código para imprimir string
+	la $a0, str_vizu1
+	syscall
+	
+loop_vizualizar_lista:
+	blt $t3, $zero, fim_loop_vizualizar_lista
+	
+	li $v0, 1 #Código para imprimir inteiro
+	move $a0, $t3
+	syscall
+	
+	li $v0, 4 #Código para imprimir string
+	la $a0, str_vizu2
+	syscall
+	
+	lw $t2, 8($t2) #cabeca = cabeca->prox
+	lw $t3, 0($t2) #val = cabeca->val
+	
+	j loop_vizualizar_lista
+	
+fim_loop_vizualizar_lista:
+	addi $t0, $t0, 1 #pos = pos + 1
+	addi $t7, $t7, 4 #Anda uma posição(4 bytes) no vetor tabela
+	
+	li $v0, 4 #Código para imprimir string
+	la $a0, str_end_line
+	syscall
+	
+	j loop_vizualizar
+
+fim_loop_vizualizar:
+	lw $a0, 4($sp)
+	lw $ra, 0($sp)
+	addi $sp, $sp, 8
+	
+	jr $ra		
 	
