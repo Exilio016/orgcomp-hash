@@ -1,3 +1,9 @@
+#Trabalho prático de Org. Comp. - Tabela Hash
+#Turma 2 - Grupo 2
+#9791305 Edson Yudi Toma
+#9791330 Bruno Flavio Ferreira
+#9778943 Luca Araujo Porto Santos
+#9791243 Rodrigo Noventa Junior
 .data
 .align 0
 
@@ -13,7 +19,6 @@ str_enter: .asciiz "\nDigite ENTER para continuar a visualização: "
 .text
 .globl main
 main:
-
 	jal criar_tabela_hash
 	move $s1, $v0
 	
@@ -29,7 +34,7 @@ loop_main:
 	li $t4, 4
 	li $t5, 5
 	
-	li $v0, 5
+	li $v0, 5 #Código para ler inteiro
 	syscall
 	
 	beq $v0, $t1, main_inserir
@@ -335,6 +340,7 @@ fim_loop_vizualizar_lista:
 	j loop_vizualizar
 
 fim_loop_vizualizar:
+	#Pilha
 	lw $a0, 4($sp)
 	lw $ra, 0($sp)
 	addi $sp, $sp, 8
